@@ -66,6 +66,44 @@ describe("LanguageSelector", () => {
     expect(screen.getByText(/README\.ja\.md/)).toBeInTheDocument();
   });
 
+  it("filters language list when searching by label", async () => {
+    const user = userEvent.setup();
+    render(<LanguageSelector />);
+
+    const searchInput = screen.getByPlaceholderText(/搜索语言/);
+    await user.type(searchInput, "日本");
+
+    const select = screen.getByLabelText(/目标语言/);
+    const options = within(select).getAllByRole("option");
+    expect(options).toHaveLength(1);
+    expect(options[0]).toHaveTextContent(/日本語/);
+  });
+
+  it("filters language list when searching by code", async () => {
+    const user = userEvent.setup();
+    render(<LanguageSelector />);
+
+    const searchInput = screen.getByPlaceholderText(/搜索语言/);
+    await user.type(searchInput, "zh");
+
+    const select = screen.getByLabelText(/目标语言/);
+    const options = within(select).getAllByRole("option");
+    expect(options).toHaveLength(2); // zh-CN and zh-TW
+  });
+
+  it("shows 无匹配语言 when search has no results", async () => {
+    const user = userEvent.setup();
+    render(<LanguageSelector />);
+
+    const searchInput = screen.getByPlaceholderText(/搜索语言/);
+    await user.type(searchInput, "xyznonexistent");
+
+    const select = screen.getByLabelText(/目标语言/);
+    const options = within(select).getAllByRole("option");
+    expect(options).toHaveLength(1);
+    expect(options[0]).toHaveTextContent(/无匹配语言/);
+  });
+
   it("updates target path preview when language changes", async () => {
     const getTargetPath = (path: string, lang: string) =>
       path.replace(/(\.\w+)$/, `.${lang}$1`);
