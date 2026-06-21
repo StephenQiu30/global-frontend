@@ -18,6 +18,15 @@
 7. `docs/`：PRD、计划、设计、验收和运维文档骨架。
 8. `.github/`：PR 模板与 CI 结构检查。
 
+## GitHub Markdown Translator
+
+产品需求和执行计划入口：
+
+- PRD 索引：[`docs/prd/github-translator/README.md`](docs/prd/github-translator/README.md)
+- Plan 索引：[`docs/plans/github-translator/README.md`](docs/plans/github-translator/README.md)
+
+第一版支持已安装 GitHub App 的仓库，通过 Web 页面完成仓库选择、文件选择、语言选择和翻译 PR 提交。PRD 10（公开仓库预览）为二期范围。
+
 ## 核心门禁
 
 1. 需求、计划和验收遵循 SMART。
