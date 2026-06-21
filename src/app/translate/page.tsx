@@ -114,6 +114,14 @@ export default function TranslatePage() {
       {error && (
         <div role="alert" style={{ color: 'red', marginBottom: 16 }}>
           {error}
+          <button
+            type="button"
+            onClick={() => setError(null)}
+            style={{ marginLeft: 8 }}
+            aria-label="关闭错误提示"
+          >
+            ✕
+          </button>
         </div>
       )}
 
