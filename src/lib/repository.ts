@@ -21,9 +21,12 @@ export function parseRepositoryInput(input: string): RepositoryRef {
     throw new Error('不支持 Gist 地址，请输入仓库地址');
   }
 
-  // Check for non-GitHub URL
-  if (trimmed.includes('github.com') === false && trimmed.includes('/') === false) {
-    throw new Error('请输入有效的仓库地址，格式为 owner/repo');
+  // Check for non-GitHub URL (if it looks like a URL but not GitHub)
+  if (
+    (trimmed.startsWith('https://') || trimmed.startsWith('http://')) &&
+    !trimmed.includes('github.com')
+  ) {
+    throw new Error('只支持 GitHub 仓库地址');
   }
 
   if (trimmed.startsWith('https://') || trimmed.startsWith('http://')) {
