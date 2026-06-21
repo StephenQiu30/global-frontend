@@ -26,6 +26,6 @@
 
 ## 4. 提交与 PR
 
-- [ ] 4.1 提交测试文件：`test: 添加 SecurityNotice 组件测试`
-- [ ] 4.2 提交实现文件：`impl: 实现 SecurityNotice 组件`
-- [ ] 4.3 创建 PR 并关联 Linear ticket
+- [x] 4.1 提交测试文件：`test: 添加 SecurityNotice 组件测试`
+- [x] 4.2 提交实现文件：`impl: 实现 SecurityNotice 组件`
+- [x] 4.3 创建 PR 并关联 Linear ticket
