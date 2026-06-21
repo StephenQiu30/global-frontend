@@ -15,3 +15,11 @@ export const SUPPORTED_LANGUAGES: Language[] = [
 ];
 
 export const DEFAULT_LANGUAGE = 'zh-CN';
+
+export function isValidLanguageCode(code: string): boolean {
+  return SUPPORTED_LANGUAGES.some((l) => l.code === code);
+}
+
+export function getLanguageByCode(code: string): Language | undefined {
+  return SUPPORTED_LANGUAGES.find((l) => l.code === code);
+}
