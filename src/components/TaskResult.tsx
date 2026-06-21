@@ -44,7 +44,7 @@ export function TaskResult({ result }: TaskResultProps) {
             <ul>
               {result.fileMappings.map((mapping) => (
                 <li key={mapping.source}>
-                  {mapping.source} → {mapping.target}
+                  {mapping.source} -&gt; {mapping.target}
                 </li>
               ))}
             </ul>

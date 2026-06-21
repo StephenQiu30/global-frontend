@@ -23,7 +23,6 @@ export default function TaskPage() {
   const [isTimeout, setIsTimeout] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const pollCountRef = useRef(0);
   const startTimeRef = useRef(Date.now());
 
   const isTerminal = result?.status === 'succeeded' || result?.status === 'failed';
