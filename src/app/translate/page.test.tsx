@@ -1,149 +1,141 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import TranslatePage from './page';
+import {
+  getMarkdownFiles,
+  resolveRepository,
+  submitTranslationTask,
+} from '@/lib/api';
 
-// Mock the API module
 vi.mock('@/lib/api', () => ({
+  getMarkdownFiles: vi.fn(),
+  resolveRepository: vi.fn(),
   submitTranslationTask: vi.fn(),
 }));
 
-// Mock next/navigation
 const mockPush = vi.fn();
+
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
 }));
 
-import { submitTranslationTask } from '@/lib/api';
-
+const mockResolveRepository = vi.mocked(resolveRepository);
+const mockGetMarkdownFiles = vi.mocked(getMarkdownFiles);
 const mockSubmitTranslationTask = vi.mocked(submitTranslationTask);
 
-function selectRepository() {
-  const repoButton = screen.getByRole('button', { name: /选择仓库/i });
-  return userEvent.click(repoButton);
-}
+const markdownFiles = [
+  {
+    path: 'README.md',
+    sizeBytes: 1024,
+    isDefaultReadme: true,
+    isTranslatedVariant: false,
+    disabledReason: null,
+    targetPathPreview: 'README.zh-CN.md',
+    targetExists: false,
+  },
+  {
+    path: 'docs/api/reference.md',
+    sizeBytes: 4096,
+    isDefaultReadme: false,
+    isTranslatedVariant: false,
+    disabledReason: null,
+    targetPathPreview: 'docs/api/reference.zh-CN.md',
+    targetExists: true,
+  },
+];
 
-function selectFile() {
-  const fileCheckbox = screen.getByRole('checkbox', { name: /README\.md/i });
-  return userEvent.click(fileCheckbox);
-}
+async function scanRepository() {
+  const user = userEvent.setup();
 
-function selectLanguage() {
-  const languageSelect = screen.getByLabelText(/目标语言/i);
-  return userEvent.selectOptions(languageSelect, 'ja');
+  await user.type(
+    screen.getByPlaceholderText(/输入 GitHub 仓库地址，例如 owner\/repo/i),
+    'facebook/react',
+  );
+  await user.click(screen.getByRole('button', { name: /扫描文件/i }));
 }
 
 describe('TranslatePage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockResolveRepository.mockResolvedValue({
+      fullName: 'facebook/react',
+      defaultBranch: 'main',
+      private: false,
+    });
+    mockGetMarkdownFiles.mockResolvedValue(markdownFiles);
   });
 
-  it('disables submit button when no repository is selected', () => {
+  it('renders the minimal SaaS repository scan entry point', () => {
     render(<TranslatePage />);
-    const submitButton = screen.getByRole('button', { name: /提交翻译/i });
-    expect(submitButton).toBeDisabled();
+
+    expect(
+      screen.getByRole('heading', { name: 'GitHub 文档翻译' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText(/输入 GitHub 仓库地址，例如 owner\/repo/i),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /扫描文件/i })).toBeInTheDocument();
   });
 
-  it('disables submit button when no files are selected', async () => {
+  it('disables submit before a repository is scanned', () => {
     render(<TranslatePage />);
-    await selectRepository();
-    const submitButton = screen.getByRole('button', { name: /提交翻译/i });
-    expect(submitButton).toBeDisabled();
+
+    expect(
+      screen.getByRole('button', { name: /提交翻译任务/i }),
+    ).toBeDisabled();
   });
 
-  it('disables submit button when no language is selected', async () => {
+  it('scans a repository and renders selectable markdown files', async () => {
     render(<TranslatePage />);
-    await selectRepository();
-    await selectFile();
-    // Language defaults to zh-CN, so clear it
-    const languageSelect = screen.getByLabelText(/目标语言/i);
-    await userEvent.selectOptions(languageSelect, '');
-    const submitButton = screen.getByRole('button', { name: /提交翻译/i });
-    expect(submitButton).toBeDisabled();
+
+    await scanRepository();
+
+    await waitFor(() => {
+      expect(screen.getByText('facebook/react · 默认分支 main')).toBeInTheDocument();
+    });
+    expect(screen.getByText('README.md')).toBeInTheDocument();
+    expect(screen.getByText('docs/api/reference.md')).toBeInTheDocument();
+    expect(screen.getByText('目标文件已存在')).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: 'README.md' })).toBeChecked();
   });
 
-  it('enables submit button when all selections are valid', async () => {
-    render(<TranslatePage />);
-    await selectRepository();
-    await selectFile();
-    const submitButton = screen.getByRole('button', { name: /提交翻译/i });
-    expect(submitButton).toBeEnabled();
-  });
-
-  it('submits task payload and navigates on success', async () => {
-    mockSubmitTranslationTask.mockResolvedValueOnce({ taskId: 'task-123' });
+  it('submits the backend DTO shape and navigates on success', async () => {
+    mockSubmitTranslationTask.mockResolvedValueOnce({
+      taskId: 'task-123',
+      status: 'queued',
+    });
     const user = userEvent.setup();
 
     render(<TranslatePage />);
-    await selectRepository();
-    await selectFile();
+    await scanRepository();
 
-    const submitButton = screen.getByRole('button', { name: /提交翻译/i });
+    const submitButton = await screen.findByRole('button', {
+      name: /提交翻译任务/i,
+    });
     await user.click(submitButton);
 
     await waitFor(() => {
-      expect(mockSubmitTranslationTask).toHaveBeenCalledWith(
-        expect.objectContaining({
-          repository: expect.objectContaining({ fullName: 'owner/repo' }),
-          files: expect.arrayContaining([
-            expect.objectContaining({ path: 'README.md' }),
-          ]),
-          targetLanguage: 'zh-CN',
-        }),
-      );
+      expect(mockSubmitTranslationTask).toHaveBeenCalledWith({
+        installationId: '123456',
+        repository: 'facebook/react',
+        baseBranch: 'main',
+        files: ['README.md'],
+        language: 'zh-CN',
+      });
     });
-
-    await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith('/tasks/task-123');
-    });
+    expect(mockPush).toHaveBeenCalledWith('/tasks/task-123');
   });
 
-  it('displays error message on submission failure', async () => {
-    mockSubmitTranslationTask.mockRejectedValueOnce(
-      new Error('翻译服务暂时不可用'),
-    );
-    const user = userEvent.setup();
+  it('shows scan errors without revealing backend details', async () => {
+    mockResolveRepository.mockRejectedValueOnce(new Error('仓库未授权'));
 
     render(<TranslatePage />);
-    await selectRepository();
-    await selectFile();
+    await scanRepository();
 
-    const submitButton = screen.getByRole('button', { name: /提交翻译/i });
-    await user.click(submitButton);
-
-    await waitFor(() => {
-      expect(screen.getByText(/翻译服务暂时不可用/i)).toBeInTheDocument();
-    });
-
-    // Button should be re-enabled after error
-    expect(submitButton).toBeEnabled();
-  });
-
-  it('shows loading indicator during submission', async () => {
-    let resolveSubmit: (value: { taskId: string }) => void;
-    mockSubmitTranslationTask.mockImplementation(
-      () =>
-        new Promise((resolve) => {
-          resolveSubmit = resolve;
-        }),
-    );
-    const user = userEvent.setup();
-
-    render(<TranslatePage />);
-    await selectRepository();
-    await selectFile();
-
-    const submitButton = screen.getByRole('button', { name: /提交翻译/i });
-    await user.click(submitButton);
-
-    await waitFor(() => {
-      expect(screen.getByText(/提交中/i)).toBeInTheDocument();
-    });
-
-    resolveSubmit!({ taskId: 'task-456' });
-
-    await waitFor(() => {
-      expect(screen.queryByText(/提交中/i)).not.toBeInTheDocument();
-    });
+    expect(await screen.findByText('仓库未授权')).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /提交翻译任务/i }),
+    ).toBeDisabled();
   });
 });

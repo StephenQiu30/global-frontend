@@ -1,39 +1,52 @@
-/** Repository information returned after verification. */
-export interface RepositoryInfo {
-  owner: string;
-  repo: string;
+export interface Installation {
+  installationId: number;
+  accountLogin: string;
+  accountType: string;
+  repositorySelection: string;
+}
+
+export interface InstallationRepository {
   fullName: string;
   defaultBranch: string;
+  private: boolean;
 }
 
-/** A file selected for translation. */
-export interface TranslationFile {
+export interface RepositoryInfo {
+  fullName: string;
+  defaultBranch: string;
+  private: boolean;
+}
+
+export interface MarkdownFile {
   path: string;
-  targetPath: string;
+  sizeBytes: number;
+  isDefaultReadme: boolean;
+  isTranslatedVariant: boolean;
+  disabledReason: string | null;
+  targetPathPreview: string;
+  targetExists: boolean;
 }
 
-/** Request payload for POST /api/translation-tasks. */
 export interface TranslationTaskRequest {
-  repository: RepositoryInfo;
-  files: TranslationFile[];
-  targetLanguage: string;
+  installationId: string;
+  repository: string;
+  baseBranch: string;
+  files: string[];
+  language: string;
 }
 
-/** Response from POST /api/translation-tasks. */
 export interface TranslationTaskResponse {
   taskId: string;
+  status: string;
 }
 
-/** Possible task statuses. */
 export type TaskStatus = 'queued' | 'running' | 'succeeded' | 'failed';
 
-/** Source-to-target file mapping. */
 export interface FileMapping {
   source: string;
   target: string;
 }
 
-/** Task result data returned by GET /api/translation-tasks/{taskId}. */
 export interface TaskResultData {
   taskId: string;
   status: TaskStatus;
@@ -41,9 +54,18 @@ export interface TaskResultData {
   targetLanguage: string;
   selectedFiles: string[];
   prUrl?: string;
-  prTitle?: string;
+  prNumber?: number;
   fileMappings?: FileMapping[];
   errorCode?: string;
   errorMessage?: string;
   retryable?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface FilePreview {
+  sourcePath: string;
+  targetPath: string;
+  status: string;
+  translatedContent?: string | null;
 }

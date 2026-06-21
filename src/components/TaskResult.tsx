@@ -34,7 +34,7 @@ export function TaskResult({ result }: TaskResultProps) {
             <a href={result.prUrl} target="_blank" rel="noopener noreferrer">
               查看 Pull Request
             </a>
-            {result.prTitle && <span>{result.prTitle}</span>}
+            {result.prNumber && <span>PR #{result.prNumber}</span>}
           </div>
         )}
 

@@ -17,7 +17,7 @@ const successResult: TaskResultData = {
   targetLanguage: 'zh-CN',
   selectedFiles: ['README.md'],
   prUrl: 'https://github.com/owner/repo/pull/42',
-  prTitle: 'docs: translate README to zh-CN',
+  prNumber: 42,
   fileMappings: [
     { source: 'README.md', target: 'README.zh-CN.md' },
   ],
@@ -44,10 +44,10 @@ describe('TaskResult', () => {
       expect(prLink).toHaveAttribute('href', 'https://github.com/owner/repo/pull/42');
     });
 
-    it('renders PR title', () => {
+    it('renders PR number', () => {
       render(<TaskResult result={successResult} />);
 
-      expect(screen.getByText('docs: translate README to zh-CN')).toBeInTheDocument();
+      expect(screen.getByText('PR #42')).toBeInTheDocument();
     });
 
     it('renders file mappings', () => {
