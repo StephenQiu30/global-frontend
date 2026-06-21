@@ -16,3 +16,12 @@ temp/
 .env
 .env.*
 !.env.example
+
+# next.js
+.next/
+next-env.d.ts
+
+# openspec changes (keep specs/)
+
+# symphony
+.symphony-claude-prompt.*
