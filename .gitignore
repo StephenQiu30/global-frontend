@@ -16,3 +16,6 @@ temp/
 .env
 .env.*
 !.env.example
+.next/
+next-env.d.ts
+.symphony-claude-prompt*
