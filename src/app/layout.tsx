@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Global Frontend',
-  description: 'GitHub Markdown Translator',
+  description: 'GitHub App 安装入口与授权管理',
 };
 
 export default function RootLayout({
