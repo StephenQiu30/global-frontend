@@ -1,8 +1,9 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 
-export default function CallbackPage() {
+function CallbackContent() {
   const searchParams = useSearchParams();
   const installationId = searchParams.get('installation_id');
 
@@ -28,5 +29,13 @@ export default function CallbackPage() {
         <p><strong>已授权仓库：</strong>等待后端验证</p>
       </div>
     </main>
+  );
+}
+
+export default function CallbackPage() {
+  return (
+    <Suspense fallback={<div>加载中...</div>}>
+      <CallbackContent />
+    </Suspense>
   );
 }
