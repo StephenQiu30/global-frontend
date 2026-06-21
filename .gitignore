@@ -22,3 +22,6 @@ temp/
 next-env.d.ts
 
 # openspec changes (keep specs/)
+
+# symphony
+.symphony-claude-prompt.*
