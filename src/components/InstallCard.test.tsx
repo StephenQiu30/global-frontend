@@ -22,7 +22,7 @@ describe('InstallCard', () => {
 
   it('displays permission explanation', () => {
     render(<InstallCard />);
-    expect(screen.getByText(/授权/i)).toBeInTheDocument();
+    expect(screen.getByText(/授权 GitHub App 访问你的仓库/i)).toBeInTheDocument();
   });
 
   it('shows placeholder for authorized repos count', () => {
